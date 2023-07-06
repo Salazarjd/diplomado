@@ -23,19 +23,28 @@ export default function Main() {
     getNews()
   }, [])
 
-  const getNews = async (evt) => {
+  const getNews = async(evt) => {
     let category = 'general'
     if(evt != null){
         category = evt.target.value
     }
     const URI = `${API_URL}/top-headlines?country=${API_COUNTRY}&apiKey=${process.env.REACT_APP_API_KEY}&category=${category}`
-    await fetch(URI)
-    .then(resp => resp.json())
-    .then(data => {
-        console.log(data.articles)
-        setNews(data.articles)
-    })
-    .catch(error => console.log(error))
+    // fetch(URI)
+    // .then(resp => resp.json())
+    // .then(data => {
+    //     console.log(data.articles)
+    //     setNews(data.articles)
+    // })
+    // .catch(error => console.log(error))
+
+    try{
+      const resp = await fetch(URI)
+      const data = await resp.json()
+      console.log(data.articles)
+      setNews(data.articles)
+    }catch(error){
+      console.log(error)
+    }
   }
 
   return (
