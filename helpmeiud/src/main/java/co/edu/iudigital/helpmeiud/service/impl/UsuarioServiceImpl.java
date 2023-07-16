@@ -37,15 +37,16 @@ public class UsuarioServiceImpl implements IUsuarioService {
     public UsuarioDTO guardar(UsuarioDTORequest usuarioDTORequest) {
         Role role = new Role();
         role.setId(2L);
-        Usuario usuario = new Usuario();
-        usuario = this.usuarioRepository.findByUsername(usuarioDTORequest.getUsername());
+        Usuario usuario = this.usuarioRepository.findByUsername(usuarioDTORequest.getUsername());
         if (usuario != null) {
             return null;
         }
+        usuario = new Usuario();
         usuario.setNombre(usuarioDTORequest.getNombre());
         usuario.setUsername(usuarioDTORequest.getUsername());
         usuario.setApellido(usuarioDTORequest.getApellido());
         usuario.setPassword(usuarioDTORequest.getPassword());
+        usuario.setFechaNacimiento(usuarioDTORequest.getFechaNacimiento());
         usuario.setImage(usuarioDTORequest.getImage());
         usuario.setEnabled(true);
         usuario.setRedSocial(false);

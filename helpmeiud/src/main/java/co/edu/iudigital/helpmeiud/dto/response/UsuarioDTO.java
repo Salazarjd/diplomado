@@ -24,5 +24,6 @@ public class UsuarioDTO {
     Boolean enabled;
 
     String image;
+
     Long roleId;
 }
