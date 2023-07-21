@@ -23,7 +23,7 @@ public class CasoDTO {
 
     String descripcion;
 
-    Boolean esVisble;
+    Boolean esVisible;
 
     String urlMap;
 

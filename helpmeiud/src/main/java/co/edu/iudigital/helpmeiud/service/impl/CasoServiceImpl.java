@@ -2,6 +2,9 @@ package co.edu.iudigital.helpmeiud.service.impl;
 
 import co.edu.iudigital.helpmeiud.dto.request.CasoRequest;
 import co.edu.iudigital.helpmeiud.dto.response.CasoDTO;
+import co.edu.iudigital.helpmeiud.exceptions.BadRequestException;
+import co.edu.iudigital.helpmeiud.exceptions.ErrorDto;
+import co.edu.iudigital.helpmeiud.exceptions.RestException;
 import co.edu.iudigital.helpmeiud.model.Caso;
 import co.edu.iudigital.helpmeiud.model.Delito;
 import co.edu.iudigital.helpmeiud.model.Usuario;
@@ -9,51 +12,70 @@ import co.edu.iudigital.helpmeiud.repository.ICasoRepository;
 import co.edu.iudigital.helpmeiud.repository.IDelitoRepository;
 import co.edu.iudigital.helpmeiud.repository.IUsuarioRepository;
 import co.edu.iudigital.helpmeiud.service.iface.ICasoService;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
-public class CasoServiceImpl implements ICasoService {
+@Slf4j
+public class CasoServiceImpl
+        implements ICasoService {
 
-    private final ICasoRepository casoRepository;
-    private final IUsuarioRepository usuarioRepository;
-    private final IDelitoRepository delitoRepository;
+    @Autowired
+    private ICasoRepository casoRepository;
+
+    @Autowired
+    private IUsuarioRepository usuarioRepository;
+
+    @Autowired
+    private IDelitoRepository delitoRepository;
 
     @Transactional(readOnly = true)
     @Override
     public List<CasoDTO> consultarTodos() {
-        List<Caso> casos = this.casoRepository.findAll();
-
+        log.info("consultando todos los casos{}");
+        List<Caso> casos = casoRepository.findAll();
         return casos.stream().map(caso ->
                 CasoDTO.builder()
                         .id(caso.getId())
-                        .fechaHora(caso.getFechaHora())
+                        .descripcion(caso.getDescripcion())
+                        .altitud(caso.getAltitud())
                         .latitud(caso.getLatitud())
                         .longitud(caso.getLongitud())
-                        .altitud(caso.getAltitud())
-                        .descripcion(caso.getDescripcion())
-                        .esVisble(caso.getEsVisble())
-                        .urlMap(caso.getUrlMap())
+                        .esVisible(caso.getEsVisible())
+                        .fechaHora(caso.getFechaHora())
                         .rmiUrl(caso.getRmiUrl())
+                        .urlMap(caso.getUrlMap())
                         .usuarioId(caso.getUsuario().getId())
                         .delitoId(caso.getDelito().getId())
-                        .build()).collect(Collectors.toList());
+                        .build()
+        ).collect(Collectors.toList());
     }
 
     @Transactional
     @Override
-    public CasoDTO crear(CasoRequest casoRequest) {
-        Optional<Usuario> usuario = usuarioRepository.findById(casoRequest.getUsuarioId());
-        Optional<Delito> delito = delitoRepository.findById(casoRequest.getDelitoId());
-
+    public Caso crear(CasoRequest casoRequest) throws RestException {
+        Optional<Usuario> usuario = usuarioRepository
+                .findById(casoRequest.getUsuarioId());
+        Optional<Delito> delito = delitoRepository
+                .findById(casoRequest.getDelitoId());
         if (!usuario.isPresent() || !delito.isPresent()) {
-            return null;
+            log.error("No existe usuario {}", casoRequest.getUsuarioId());
+            throw new BadRequestException(
+                    ErrorDto.builder()
+                            .status(HttpStatus.BAD_REQUEST.value())
+                            .message("No existe usuario o delito")
+                            .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                            .date(LocalDateTime.now())
+                            .build()
+            );
         }
         Caso caso = new Caso();
         caso.setFechaHora(casoRequest.getFechaHora());
@@ -61,54 +83,41 @@ public class CasoServiceImpl implements ICasoService {
         caso.setLongitud(casoRequest.getLongitud());
         caso.setAltitud(casoRequest.getAltitud());
         caso.setDescripcion(casoRequest.getDescripcion());
-        caso.setEsVisble(casoRequest.getEsVisble());
+        caso.setEsVisible(true);
         caso.setUrlMap(casoRequest.getUrlMap());
         caso.setRmiUrl(casoRequest.getRmiUrl());
         caso.setUsuario(usuario.get());
         caso.setDelito(delito.get());
-
-        Caso casoGuardado = casoRepository.save(caso);
-        return CasoDTO.builder()
-                .id(casoGuardado.getId())
-                .fechaHora(casoGuardado.getFechaHora())
-                .latitud(casoGuardado.getLatitud())
-                .longitud(casoGuardado.getLongitud())
-                .altitud(casoGuardado.getAltitud())
-                .descripcion(casoGuardado.getDescripcion())
-                .esVisble(casoGuardado.getEsVisble())
-                .urlMap(casoGuardado.getUrlMap())
-                .rmiUrl(casoGuardado.getRmiUrl())
-                .usuarioId(casoGuardado.getUsuario().getId())
-                .delitoId(casoGuardado.getDelito().getId())
-                .build();
+        return casoRepository.save(caso);
     }
 
     @Transactional
     @Override
     public Boolean visible(Boolean visible, Long id) {
-        return this.casoRepository.setVisible(visible, id);
+        return casoRepository.setVisible(visible, id);
     }
 
     @Transactional(readOnly = true)
     @Override
     public CasoDTO consultarPorId(Long id) {
-        Optional<Caso> casoOptional = this.casoRepository.findById(id);
-        if (!casoOptional.isPresent()) {
-            return null;
+        Optional<Caso> casoOptional = casoRepository.findById(id);
+        if (casoOptional.isPresent()) {
+            Caso caso = casoOptional.get();
+            return CasoDTO.builder()
+                    .id(caso.getId())
+                    .descripcion(caso.getDescripcion())
+                    .altitud(caso.getAltitud())
+                    .latitud(caso.getLatitud())
+                    .longitud(caso.getLongitud())
+                    .esVisible(caso.getEsVisible())
+                    .fechaHora(caso.getFechaHora())
+                    .rmiUrl(caso.getRmiUrl())
+                    .urlMap(caso.getUrlMap())
+                    .usuarioId(caso.getUsuario().getId())
+                    .delitoId(caso.getDelito().getId())
+                    .build();
         }
-        Caso caso = casoOptional.get();
-        return CasoDTO.builder()
-                .id(caso.getId())
-                .fechaHora(caso.getFechaHora())
-                .latitud(caso.getLatitud())
-                .longitud(caso.getLongitud())
-                .altitud(caso.getAltitud())
-                .descripcion(caso.getDescripcion())
-                .esVisble(caso.getEsVisble())
-                .urlMap(caso.getUrlMap())
-                .rmiUrl(caso.getRmiUrl())
-                .usuarioId(caso.getUsuario().getId())
-                .delitoId(caso.getDelito().getId())
-                .build();
+        log.warn("No existe usuario {}", id);
+        return null; //TODO: controlar con excepciones
     }
 }

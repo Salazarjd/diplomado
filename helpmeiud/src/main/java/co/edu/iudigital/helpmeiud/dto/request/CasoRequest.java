@@ -1,5 +1,6 @@
 package co.edu.iudigital.helpmeiud.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +12,9 @@ import java.time.LocalDateTime;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CasoRequest {
+    Long id;
+
+    @JsonProperty("fecha_hora")
     LocalDateTime fechaHora;
 
     Float latitud;
@@ -21,13 +25,17 @@ public class CasoRequest {
 
     String descripcion;
 
-    Boolean esVisble;
+    Boolean esVisible;
 
+    @JsonProperty("url_map")
     String urlMap;
 
+    @JsonProperty("rmi_url")
     String rmiUrl;
 
+    @JsonProperty("usuario_id")
     Long usuarioId;
 
+    @JsonProperty("delito_id")
     Long delitoId;
 }
