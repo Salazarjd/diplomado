@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CasoRequest {
+public class CasoDTORequest {
     Long id;
 
     @JsonProperty("fecha_hora")

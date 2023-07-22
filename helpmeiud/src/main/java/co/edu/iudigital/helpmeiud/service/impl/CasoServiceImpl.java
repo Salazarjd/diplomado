@@ -1,6 +1,6 @@
 package co.edu.iudigital.helpmeiud.service.impl;
 
-import co.edu.iudigital.helpmeiud.dto.request.CasoRequest;
+import co.edu.iudigital.helpmeiud.dto.request.CasoDTORequest;
 import co.edu.iudigital.helpmeiud.dto.response.CasoDTO;
 import co.edu.iudigital.helpmeiud.exceptions.BadRequestException;
 import co.edu.iudigital.helpmeiud.exceptions.ErrorDto;
@@ -61,13 +61,13 @@ public class CasoServiceImpl
 
     @Transactional
     @Override
-    public Caso crear(CasoRequest casoRequest) throws RestException {
+    public Caso crear(CasoDTORequest casoDTORequest) throws RestException {
         Optional<Usuario> usuario = usuarioRepository
-                .findById(casoRequest.getUsuarioId());
+                .findById(casoDTORequest.getUsuarioId());
         Optional<Delito> delito = delitoRepository
-                .findById(casoRequest.getDelitoId());
+                .findById(casoDTORequest.getDelitoId());
         if (!usuario.isPresent() || !delito.isPresent()) {
-            log.error("No existe usuario {}", casoRequest.getUsuarioId());
+            log.error("No existe usuario {}", casoDTORequest.getUsuarioId());
             throw new BadRequestException(
                     ErrorDto.builder()
                             .status(HttpStatus.BAD_REQUEST.value())
@@ -78,14 +78,14 @@ public class CasoServiceImpl
             );
         }
         Caso caso = new Caso();
-        caso.setFechaHora(casoRequest.getFechaHora());
-        caso.setLatitud(casoRequest.getLatitud());
-        caso.setLongitud(casoRequest.getLongitud());
-        caso.setAltitud(casoRequest.getAltitud());
-        caso.setDescripcion(casoRequest.getDescripcion());
+        caso.setFechaHora(casoDTORequest.getFechaHora());
+        caso.setLatitud(casoDTORequest.getLatitud());
+        caso.setLongitud(casoDTORequest.getLongitud());
+        caso.setAltitud(casoDTORequest.getAltitud());
+        caso.setDescripcion(casoDTORequest.getDescripcion());
         caso.setEsVisible(true);
-        caso.setUrlMap(casoRequest.getUrlMap());
-        caso.setRmiUrl(casoRequest.getRmiUrl());
+        caso.setUrlMap(casoDTORequest.getUrlMap());
+        caso.setRmiUrl(casoDTORequest.getRmiUrl());
         caso.setUsuario(usuario.get());
         caso.setDelito(delito.get());
         return casoRepository.save(caso);

@@ -1,6 +1,6 @@
 package co.edu.iudigital.helpmeiud.controller;
 
-import co.edu.iudigital.helpmeiud.dto.request.CasoRequest;
+import co.edu.iudigital.helpmeiud.dto.request.CasoDTORequest;
 import co.edu.iudigital.helpmeiud.dto.response.CasoDTO;
 import co.edu.iudigital.helpmeiud.exceptions.RestException;
 import co.edu.iudigital.helpmeiud.model.Caso;
@@ -52,11 +52,11 @@ public class CasoController {
     @PostMapping
     @ResponseStatus(code = HttpStatus.CREATED)
     public ResponseEntity<Caso> create(
-            @RequestBody @Valid CasoRequest casoRequest
+            @RequestBody @Valid CasoDTORequest casoDTORequest
     ) throws RestException {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(
-                        casoService.crear(casoRequest)
+                        casoService.crear(casoDTORequest)
                 );
     }
 }
